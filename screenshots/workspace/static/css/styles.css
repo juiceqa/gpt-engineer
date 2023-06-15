@@ -1,0 +1,116 @@
+/* Reset default styles */
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+ul,
+ol,
+li,
+dl,
+dt,
+dd {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Set body font and background */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+
+
+/* Set container styles */
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+/* Style the header */
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+
+/* Style the heading */
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+
+/* Style the form */
+
+form {
+    margin-bottom: 20px;
+}
+
+
+/* Style the input field */
+
+input[type="text"] {
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+/* Style the submit button */
+
+input[type="submit"] {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+
+/* Style the screenshot container */
+
+.screenshot-container {
+    margin-bottom: 20px;
+}
+
+
+/* Style the screenshot image */
+
+.screenshot-image {
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+}
+
+
+/* Style the download button */
+
+.download-button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    text-decoration: none;
+}
+
+
+/* Style error messages */
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+}

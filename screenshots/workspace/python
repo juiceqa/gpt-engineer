@@ -1,0 +1,32 @@
+from typing import List
+from dataclasses import dataclass
+from mysql.connector import connect
+from screenshot import Screenshot
+
+@dataclass
+class DBConfig:
+    host: str
+    user: str
+    password: str
+    database: str
+
+class ScreenshotViewer:
+    def __init__(self, db_config: DBConfig):
+        self.db_config = db_config
+
+    def get_screenshots(self) -> List[Screenshot]:
+        with connect(
+            host=self.db_config.host,
+            user=self.db_config.user,
+            password=self.db_config.password,
+            database=self.db_config.database
+        ) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT url, image FROM screenshots"
+                )
+                rows = cursor.fetchall()
+                screenshots = []
+                for row in rows:
+                    screenshots.append(Screenshot(row[0], row[1]))
+        return screenshots

@@ -1,0 +1,4 @@
+Flask==2.0.1
+mysql-connector-python==8.0.26
+Pillow==9.1.0
+selenium==3.141.0

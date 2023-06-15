@@ -1,0 +1,24 @@
+Full page screenshots in the browser based on the urls from a sitemap input by the user via a web form.
+Output format is png.
+Use python with MVC Components and account for timeouts with int, float or None.
+Use playwright to drive the browser.
+The request would be a user entering in a sitemap url into a field from the browser.
+Please generate the html and js for the user input field and for the page that displays the screenshots that are output in the browser after being concatenated into a pdf.
+The controller that receives the request should loop through the urls and screenshot each and feed them to the database.
+Use MySQL Connector Python as the database.
+The view should display them in the browser.
+Dynamic content like form fields or user inputs should be left blank and ignored.
+Wait for animations and videos to load.
+Draw a blackbox around all iframes when encountered on the page.
+Remove all models, popups and overlays when encountered on the page.
+Authentication should be included by the user in the url in this format: https://username:password@example.com.
+Take 1st screenshot without clicking any interactive elements.
+Click expand buttons and take 2nd screenshot thereafter.
+If a hamburger menu exists on mobile or a second tier exists in the navigation on desktop, click the hamburger menu and hover over the first menu item or hover over the top level navigation on desktop and take the 3rd screenshot.
+Fixed or sticky elements should be transformed to static using the python equivalent of jquery.
+Scrollable elements that display a tray or preview should be transformed to static and the tray or preview should be removed.
+Desktop screenshots should be 1440px in width.
+Mobile screenshots should be 375px in width.
+The height should equal the height of the document, so lazy-loaded elements should not be a problem.
+Websites will not have ads or third party content.
+Height of the screenshot should be the same as the height of the window.document.

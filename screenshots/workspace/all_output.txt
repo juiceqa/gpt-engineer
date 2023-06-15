@@ -1,0 +1,188 @@
+Core classes, functions, and methods:
+- ScreenshotHandler: Controller that receives the request and handles the screenshot generation and database storage.
+- ScreenshotViewer: View that displays the screenshots in the browser.
+- Screenshot: Data class that represents a screenshot and its metadata.
+- screenshot_website(url: str, timeout: Union[int, float, None], auth: Optional[Tuple[str, str]]) -> Screenshot: Function that takes a URL, timeout, and authentication credentials and returns a Screenshot object.
+- transform_fixed_elements_to_static(html: str) -> str: Function that takes an HTML string and transforms fixed or sticky elements to static.
+- remove_scrollable_trays(html: str) -> str: Function that takes an HTML string and removes scrollable trays.
+
+entrypoint.py
+```python
+from typing import Optional, Tuple
+from flask import Flask, request, render_template, send_file
+from mysql.connector import connect
+from dataclasses import dataclass
+from screenshot import screenshot_website
+from screenshot_viewer import ScreenshotViewer
+
+app = Flask(__name__)
+
+@dataclass
+class DBConfig:
+    host: str
+    user: str
+    password: str
+    database: str
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/screenshots', methods=['POST'])
+def screenshots():
+    url = request.form['URL']
+    timeout = request.form.get('timeout')
+    auth_username = request.form.get('auth_username')
+    auth_password = request.form.get('auth_password')
+    auth = None
+    if auth_username and auth_password:
+        auth = (auth_username, auth_password)
+    screenshot = screenshot_website(url, timeout, auth)
+    db_config = DBConfig(
+        host='localhost',
+        user='root',
+        password='password',
+        database='screenshots'
+    )
+    with connect(
+        host=db_config.host,
+        user=db_config.user,
+        password=db_config.password,
+        database=db_config.database
+    ) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                f"CREATE TABLE IF NOT EXISTS screenshots (url VARCHAR(255), image BLOB)"
+            )
+            cursor.execute(
+                f"INSERT INTO screenshots (url, image) VALUES ('{url}', %s)",
+                (screenshot.image,)
+            )
+            conn.commit()
+    return send_file(screenshot.image, mimetype='image/png')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+screenshot.py
+```python
+from typing import Optional, Tuple, Union
+from dataclasses import dataclass
+from pyquery import PyQuery
+from playwright.sync_api import Playwright, sync_playwright
+
+@dataclass
+class Screenshot:
+    url: str
+    image: bytes
+
+def screenshot_website(url: str, timeout: Union[int, float, None], auth: Optional[Tuple[str, str]]) -> Screenshot:
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        if auth:
+            page.authenticate(username=auth[0], password=auth[1])
+        page.goto(url, timeout=timeout)
+        page.wait_for_selector('*')
+        html = page.content()
+        html = transform_fixed_elements_to_static(html)
+        html = remove_scrollable_trays(html)
+        page.set_content(html)
+        screenshot = page.screenshot(full_page=True)
+        browser.close()
+    return Screenshot(url, screenshot)
+
+def transform_fixed_elements_to_static(html: str) -> str:
+    pq = PyQuery(html)
+    fixed_elements = pq('body').find('*').filter(lambda i, this: pq(this).css('position') in ['fixed', 'sticky'])
+    for element in fixed_elements:
+        pq(element).css('position', 'static')
+    return str(pq)
+
+def remove_scrollable_trays(html: str) -> str:
+    pq = PyQuery(html)
+    scrollable_trays = pq('body').find('*').filter(lambda i, this: 'tray' in pq(this).attr('id') or 'tray' in pq(this).attr('class'))
+    for element in scrollable_trays:
+        pq(element).remove()
+    return str(pq)
+```
+
+screenshot_viewer.py
+```python
+from typing import List
+from dataclasses import dataclass
+from mysql.connector import connect
+from screenshot import Screenshot
+
+@dataclass
+class DBConfig:
+    host: str
+    user: str
+    password: str
+    database: str
+
+class ScreenshotViewer:
+    def __init__(self, db_config: DBConfig):
+        self.db_config = db_config
+
+    def get_screenshots(self) -> List[Screenshot]:
+        with connect(
+            host=self.db_config.host,
+            user=self.db_config.user,
+            password=self.db_config.password,
+            database=self.db_config.database
+        ) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT url, image FROM screenshots"
+                )
+                rows = cursor.fetchall()
+                screenshots = []
+                for row in rows:
+                    screenshots.append(Screenshot(row[0], row[1]))
+        return screenshots
+```
+
+index.html
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screenshot Generator</title>
+</head>
+<body>
+    <form method="POST" action="/screenshots">
+        <label for="URL">URL:</label>
+        <input type="text" id="URL" name="URL" required>
+        <br>
+        <label for="timeout">Timeout (seconds):</label>
+        <input type="number" id="timeout" name="timeout" min="0">
+        <br>
+        <label for="auth_username">Authentication Username:</label>
+        <input type="text" id="auth_username" name="auth_username">
+        <br>
+        <label for="auth_password">Authentication Password:</label>
+        <input type="password" id="auth_password" name="auth_password">
+        <br>
+        <input type="submit" value="Generate Screenshot">
+    </form>
+</body>
+</html>
+```
+
+viewer.html
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screenshot Viewer</title>
+</head>
+<body>
+    {% for screenshot in screenshots %}
+        <h2>{{ screenshot.url }}</h2>
+        <img src="{{ screenshot.image }}" alt="{{ screenshot.url }}">
+    {% endfor %}
+</body>
+</html>
+```

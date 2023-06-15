@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screenshot Viewer</title>
+</head>
+<body>
+    {% for screenshot in screenshots %}
+        <h2>{{ screenshot.url }}</h2>
+        <img src="{{ screenshot.image }}" alt="{{ screenshot.url }}">
+    {% endfor %}
+</body>
+</html>

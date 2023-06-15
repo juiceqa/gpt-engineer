@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Website Screenshot App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Website Screenshot App</h1>
+    </header>
+    <div class="container">
+        <form action="/screenshots" method="POST">
+            <label for="sitemap_url">Sitemap URL:</label>
+            <input type="text" id="sitemap_url" name="sitemap_url" required>
+            <input type="submit" value="Take Screenshots">
+        </form>
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %} {% if screenshots %}
+        <h2>Screenshots:</h2>
+        <div class="screenshot-container">
+            {% for screenshot in screenshots %}
+            <img class="screenshot-image" src="data:image/png;base64,{{ screenshot.image }}" alt="{{ screenshot.url }}"> {% endfor %}
+        </div>
+        <a class="download-button" href="/screenshots/download">Download PDF</a> {% endif %}
+    </div>
+</body>
+
+</html>
